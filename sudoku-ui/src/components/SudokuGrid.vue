@@ -13,7 +13,7 @@
           'sudoku-grid__cell--prefilled':
             sudokuStore.solvedGrid[rowIndex][colIndex] !== undefined,
         }"
-        v-for="(cell, colIndex) in row"
+        v-for="(, colIndex) in row"
         :key="colIndex"
         @click="handleClick(rowIndex, colIndex)"
       >

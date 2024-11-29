@@ -11,18 +11,22 @@
 </template>
 
 <script lang="ts">
-export default {
-  data() {
+import { defineComponent, ref } from 'vue';
+
+export default defineComponent({
+  setup() {
+    const numbers = ref(Array.from({ length: 9 }, (_, i) => i + 1));
+
+    const handleClick = (number: number) => {
+      console.log('handleClick number=', number);
+    };
+
     return {
-      numbers: Array.from({ length: 9 }, (_, i) => i + 1),
+      numbers,
+      handleClick,
     };
   },
-  methods: {
-    handleClick(number: number) {
-      console.log('handleClick number=', number);
-    },
-  },
-};
+});
 </script>
 
 <style scoped lang="scss">

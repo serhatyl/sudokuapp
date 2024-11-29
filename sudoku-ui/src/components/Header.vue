@@ -17,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, watch, computed } from 'vue';
+import { defineComponent, ref, onMounted, computed } from 'vue';
 import { RankEnum } from '../models';
 import { useSudokuStore } from '../store/sudokuStore';
 

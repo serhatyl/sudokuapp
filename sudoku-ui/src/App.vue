@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import Header from './components/Header.vue';
 import SudokuGrid from './components/SudokuGrid.vue';
 import AvailableDigits from './components/AvailableDigits.vue';
