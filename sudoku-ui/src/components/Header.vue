@@ -44,7 +44,7 @@ export default defineComponent({
 
     const onRankChanged = (event: Event) => {
       if (event.target instanceof HTMLSelectElement) {
-        sudokuStore.changeRank(event.target.value as RankEnum);
+        sudokuStore.generateSudoku(event.target.value as RankEnum);
         console.log('sudokuStore.elapsedTime= ', sudokuStore.elapsedTime);
       }
     };

@@ -33,7 +33,8 @@ export default defineComponent({
 .digit-row {
   margin: 20px 0;
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 12px;
 }
 </style>

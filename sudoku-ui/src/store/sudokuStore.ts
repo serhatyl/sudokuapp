@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
-import { RankEnum } from '../models';
-import { clearCells, fillAllCells } from '../utilities/sudoku';
+import { fillAllCells, clearCells } from '../utilities/sudoku';
+import { SudokuBoard, RankEnum } from '../models';
 
 export const useSudokuStore = defineStore('sudoku', {
   state: () => ({
@@ -9,35 +9,58 @@ export const useSudokuStore = defineStore('sudoku', {
     remainingHint: 10,
     elapsedTime: 0,
     interval: 0,
-    grid: Array(9)
-      .fill(null)
-      .map(() => Array(9).fill(undefined)),
-    solvedGrid: Array(9)
-      .fill(null)
-      .map(() => Array(9).fill(undefined)),
+    grid: [] as SudokuBoard,
+    solvedGrid: [] as SudokuBoard,
+    errorCells: new Set<string>(),
+    prefilledCells: new Set<string>(),
   }),
   actions: {
     changeScore(score: number) {
       this.score = score;
-    },
-    changeRank(newRank: RankEnum) {
-      this.rank = newRank;
-      this.resetTimer();
-      this.generateSudoku(newRank);
     },
     reduceRemainingHint() {
       if (this.remainingHint > 0) {
         this.remainingHint -= 1;
       }
     },
-    generateSudoku(rank: RankEnum | string) {
-      const sudokuArray: number[][] = Array(9)
-        .fill(0)
-        .map(() => Array(9).fill(undefined));
-      fillAllCells(sudokuArray);
-      console.log('fillAllCells sudoku array=', sudokuArray);
-      this.solvedGrid = sudokuArray;
-      this.grid = clearCells(this.solvedGrid, rank);
+    generateSudoku(difficulty: RankEnum) {
+      const emptyBoard: SudokuBoard = Array.from({ length: 9 }, () =>
+        Array(9).fill(undefined)
+      );
+      fillAllCells(emptyBoard);
+      this.solvedGrid = JSON.parse(JSON.stringify(emptyBoard));
+      this.grid = clearCells(
+        JSON.parse(JSON.stringify(this.solvedGrid)),
+        difficulty
+      );
+      this.resetTimer();
+    },
+    clearCell(row: number, col: number) {
+      if (this.grid[row] && typeof this.grid[row][col] !== 'undefined') {
+        this.grid[row][col] = undefined;
+      }
+    },
+    setCell(row: number, col: number, value: number) {
+      if (
+        this.grid[row] &&
+        typeof this.grid[row][col] !== 'undefined' &&
+        value >= 1 &&
+        value <= 9
+      ) {
+        this.grid[row][col] = value;
+      }
+    },
+    resetGrid() {
+      this.grid = clearCells(
+        JSON.parse(JSON.stringify(this.solvedGrid)),
+        RankEnum.Beginner
+      );
+    },
+    clearGrid() {
+      this.grid = Array.from({ length: 9 }, () => Array(9).fill(undefined));
+    },
+    isGridSolved(): boolean {
+      return JSON.stringify(this.grid) === JSON.stringify(this.solvedGrid);
     },
     startTimer() {
       if (this.interval) return;
@@ -56,6 +79,15 @@ export const useSudokuStore = defineStore('sudoku', {
       this.stopTimer();
       this.elapsedTime = 0;
       this.startTimer();
+    },
+    setCellError(rowIndex: number, colIndex: number) {
+      this.errorCells.add(`${rowIndex}-${colIndex}`);
+    },
+    clearCellError(rowIndex: number, colIndex: number) {
+      this.errorCells.delete(`${rowIndex}-${colIndex}`);
+    },
+    clearAllError() {
+      this.errorCells.clear();
     },
   },
 });

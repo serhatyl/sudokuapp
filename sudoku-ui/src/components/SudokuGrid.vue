@@ -10,12 +10,13 @@
         :class="{
           'sudoku-grid__cell--border-right': (colIndex + 1) % 3 === 0,
           'sudoku-grid__cell--border-bottom': (rowIndex + 1) % 3 === 0,
-          'sudoku-grid__cell--prefilled':
-            sudokuStore.solvedGrid[rowIndex][colIndex] !== undefined,
+          'sudoku-grid__cell--prefilled': isPrefilled(rowIndex, colIndex),
+          'sudoku-grid__cell--error': sudokuStore.errorCells.has(
+            `${rowIndex}-${colIndex}`
+          ),
         }"
-        v-for="(, colIndex) in row"
+        v-for="(_, colIndex) in row"
         :key="colIndex"
-        @click="handleClick(rowIndex, colIndex)"
       >
         <input
           type="number"
@@ -23,8 +24,9 @@
           class="sudoku-grid__cell__input"
           min="1"
           max="9"
-          @keydown="handleKeyDown($event, rowIndex, colIndex)"
-          :disabled="sudokuStore.solvedGrid[rowIndex][colIndex] !== undefined"
+          @input="handleChange(rowIndex, colIndex)"
+          @keydown="handleKeyDown($event)"
+          :disabled="isPrefilled(rowIndex, colIndex)"
         />
       </div>
     </div>
@@ -32,34 +34,77 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from 'vue';
+import { defineComponent, onMounted, watch } from 'vue';
 import { useSudokuStore } from '../store/sudokuStore';
 
 export default defineComponent({
   setup() {
     const sudokuStore = useSudokuStore();
 
-    onMounted(() => {
-      sudokuStore.generateSudoku(sudokuStore.rank);
-      sudokuStore.startTimer();
-    });
-
-    const handleClick = (rowIndex: number, colIndex: number) => {
-      console.log(rowIndex, colIndex);
+    const updatePrefilledCells = () => {
+      sudokuStore.prefilledCells.clear();
+      sudokuStore.grid.forEach((row, rowIndex) => {
+        row.forEach((cell, colIndex) => {
+          if (cell !== undefined) {
+            sudokuStore.prefilledCells.add(`${rowIndex}-${colIndex}`);
+          }
+        });
+      });
     };
 
-    const handleKeyDown = (
-      event: KeyboardEvent,
-      rowIndex: number,
-      colIndex: number
-    ) => {
-      console.log(event, rowIndex, colIndex);
+    onMounted(() => {
+      sudokuStore.generateSudoku(sudokuStore.rank);
+    });
+
+    watch(
+      () => sudokuStore.grid,
+      () => {
+        updatePrefilledCells();
+        sudokuStore.clearAllError();
+      }
+    );
+
+    const isPrefilled = (rowIndex: number, colIndex: number): boolean => {
+      return sudokuStore.prefilledCells.has(`${rowIndex}-${colIndex}`);
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const key = event.key;
+      const allowedKeys = [
+        'Backspace',
+        'Tab',
+        'Delete',
+        'ArrowLeft',
+        'ArrowRight',
+        'ArrowUp',
+        'ArrowDown',
+      ];
+
+      const inputValue = (event.target as HTMLInputElement).value + key;
+
+      if (
+        (!/^[1-9]$/.test(key) && !allowedKeys.includes(key)) ||
+        (inputValue.length > 1 && !allowedKeys.includes(key))
+      ) {
+        event.preventDefault();
+      }
+    };
+    const handleChange = (rowIndex: number, colIndex: number) => {
+      const userInput = sudokuStore.grid[rowIndex][colIndex];
+      const solvedValue = sudokuStore.solvedGrid[rowIndex][colIndex];
+
+      if (userInput !== solvedValue && userInput) {
+        sudokuStore.setCellError(rowIndex, colIndex);
+      } else {
+        sudokuStore.clearCellError(rowIndex, colIndex);
+      }
     };
 
     return {
       sudokuStore,
-      handleClick,
+      handleChange,
       handleKeyDown,
+      isPrefilled,
     };
   },
 });
@@ -80,8 +125,8 @@ export default defineComponent({
   }
 
   &__cell {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -98,6 +143,10 @@ export default defineComponent({
 
     &--prefilled {
       background-color: #f0f0f0;
+    }
+
+    &--error {
+      background-color: #ff0000;
     }
 
     &--border-bottom {
