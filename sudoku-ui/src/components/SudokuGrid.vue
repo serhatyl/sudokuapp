@@ -37,15 +37,40 @@
       </div>
     </div>
   </div>
+
+  <Fireworks
+    ref="fw"
+    v-if="isSudokuCompleted"
+    :style="{
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      position: 'fixed',
+    }"
+  />
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, watch } from 'vue';
+import { defineComponent, onMounted, ref, watch } from 'vue';
 import { useSudokuStore } from '../store/sudokuStore';
+import Fireworks from '@fireworks-js/vue';
 
 export default defineComponent({
+  components: {
+    Fireworks,
+  },
   setup() {
     const sudokuStore = useSudokuStore();
+    const fw = ref<InstanceType<typeof Fireworks>>();
+    const isSudokuCompleted = ref(false);
+
+    async function startFireworks() {
+      if (!fw.value) return;
+      fw.value.start();
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await fw.value.waitStop();
+    }
 
     const updatePrefilledCells = () => {
       sudokuStore.prefilledCells.clear();
@@ -62,6 +87,8 @@ export default defineComponent({
       sudokuStore.generateSudoku(sudokuStore.rank);
       console.log('solved grid = ', sudokuStore.solvedGrid);
     });
+
+    watch(fw, () => startFireworks());
 
     watch(
       () => sudokuStore.grid,
@@ -103,7 +130,6 @@ export default defineComponent({
     const handleChange = (rowIndex: number, colIndex: number) => {
       const userInput = sudokuStore.grid[rowIndex][colIndex];
       const solvedValue = sudokuStore.solvedGrid[rowIndex][colIndex];
-
       if (userInput === solvedValue) {
         sudokuStore.changeScore((sudokuStore.score += 5));
       }
@@ -113,10 +139,16 @@ export default defineComponent({
       } else {
         sudokuStore.clearCellError(rowIndex, colIndex);
       }
+      isSudokuCompleted.value = sudokuStore.isGridSolved();
+      if (isSudokuCompleted) {
+        alert('Congratulations!');
+        //TODO save time & score
+      }
     };
 
     return {
       sudokuStore,
+      isSudokuCompleted,
       handleChange,
       handleKeyDown,
       isPrefilled,

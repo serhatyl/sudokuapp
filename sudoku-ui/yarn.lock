@@ -90,6 +90,13 @@
   dependencies:
     levn "^0.4.1"
 
+"@fireworks-js/vue@^2.10.8":
+  version "2.10.8"
+  resolved "https://registry.npmjs.org/@fireworks-js/vue/-/vue-2.10.8.tgz"
+  integrity sha512-XcLfgSO5OHxV6ffn3T3KC0vgJa1in3oLB/Laqzfgc3OBtx2bpwsfbayZNNiQdscRijl1yxHTC0fqe0q83m/dzg==
+  dependencies:
+    fireworks-js "2.10.8"
+
 "@humanfs/core@^0.19.1":
   version "0.19.1"
   resolved "https://registry.npmjs.org/@humanfs/core/-/core-0.19.1.tgz"
@@ -641,6 +648,11 @@ find-up@^5.0.0:
     locate-path "^6.0.0"
     path-exists "^4.0.0"
 
+fireworks-js@2.10.8:
+  version "2.10.8"
+  resolved "https://registry.npmjs.org/fireworks-js/-/fireworks-js-2.10.8.tgz"
+  integrity sha512-UZNxeJvRmQzLisN4iriWXqKojG9TDJqc0dPmkUw0/+AEQQ3w8z1Jx2YdFSiBGSVb/u4dPTQXU109GMVblzhfpg==
+
 flat-cache@^4.0.0:
   version "4.0.1"
   resolved "https://registry.npmjs.org/flat-cache/-/flat-cache-4.0.1.tgz"
@@ -1089,7 +1101,7 @@ vue-tsc@^2.1.10:
     "@vue/language-core" "2.1.10"
     semver "^7.5.4"
 
-"vue@^2.6.14 || ^3.5.11", "vue@^3.0.0-0 || ^2.6.0", vue@^3.2.25, vue@^3.5.13, vue@3.5.13:
+"vue@^2.6.14 || ^3.5.11", "vue@^3.0.0-0 || ^2.6.0", vue@^3.2.25, vue@^3.5.13, vue@>=3.0.0, vue@3.5.13:
   version "3.5.13"
   resolved "https://registry.npmjs.org/vue/-/vue-3.5.13.tgz"
   integrity sha512-wmeiSMxkZCSc+PM2w2VRsOYAZC8GdipNFRTsLSfodVqI9mbejKeXEGr8SckuLnrQPGe3oJN5c3K0vpoU9q/wCQ==
