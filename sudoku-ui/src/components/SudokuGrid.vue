@@ -140,7 +140,7 @@ export default defineComponent({
         sudokuStore.clearCellError(rowIndex, colIndex);
       }
       isSudokuCompleted.value = sudokuStore.isGridSolved();
-      if (isSudokuCompleted) {
+      if (isSudokuCompleted.value) {
         alert('Congratulations!');
         //TODO save time & score
       }
