@@ -50,16 +50,6 @@ export const useSudokuStore = defineStore('sudoku', {
         this.grid[row][col] = undefined;
       }
     },
-    setCell(row: number, col: number, value: number) {
-      if (
-        this.grid[row] &&
-        typeof this.grid[row][col] !== 'undefined' &&
-        value >= 1 &&
-        value <= 9
-      ) {
-        this.grid[row][col] = value;
-      }
-    },
     clearGrid() {
       this.grid = Array.from({ length: 9 }, () => Array(9).fill(undefined));
     },

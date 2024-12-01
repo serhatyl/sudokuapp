@@ -99,12 +99,17 @@ export default defineComponent({
         event.preventDefault();
       }
     };
+
     const handleChange = (rowIndex: number, colIndex: number) => {
       const userInput = sudokuStore.grid[rowIndex][colIndex];
       const solvedValue = sudokuStore.solvedGrid[rowIndex][colIndex];
 
+      if (userInput === solvedValue) {
+        sudokuStore.changeScore((sudokuStore.score += 5));
+      }
       if (userInput !== solvedValue && userInput) {
         sudokuStore.setCellError(rowIndex, colIndex);
+        sudokuStore.changeScore((sudokuStore.score -= 1));
       } else {
         sudokuStore.clearCellError(rowIndex, colIndex);
       }
