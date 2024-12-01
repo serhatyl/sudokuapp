@@ -1,29 +1,40 @@
 import { defineStore } from 'pinia';
-import { fillAllCells, clearCells } from '../utilities/sudoku';
+import {
+  fillAllCells,
+  clearCells,
+  getHint,
+  TOTAL_HINT_COUNT,
+  defaultState,
+} from '../utilities/sudoku';
 import { SudokuBoard, RankEnum } from '../models';
 
 export const useSudokuStore = defineStore('sudoku', {
-  state: () => ({
-    rank: RankEnum.Beginner,
-    score: 0,
-    remainingHint: 10,
-    elapsedTime: 0,
-    interval: 0,
-    grid: [] as SudokuBoard,
-    solvedGrid: [] as SudokuBoard,
-    errorCells: new Set<string>(),
-    prefilledCells: new Set<string>(),
-  }),
+  state: () => ({ ...defaultState }),
   actions: {
+    resetState() {
+      this.stopTimer();
+      Object.assign(this, { ...defaultState });
+      this.clearAllErrorCells();
+      this.clearAllHintCells();
+      if (!this.interval) {
+        this.startTimer();
+      }
+    },
     changeScore(score: number) {
       this.score = score;
     },
-    reduceRemainingHint() {
+    getHint() {
       if (this.remainingHint > 0) {
+        const usedHints = TOTAL_HINT_COUNT - this.remainingHint;
+        const penalty = 3 + usedHints;
+        this.score -= penalty;
         this.remainingHint -= 1;
+
+        getHint(this.solvedGrid, this.grid);
       }
     },
     generateSudoku(difficulty: RankEnum) {
+      this.resetState();
       const emptyBoard: SudokuBoard = Array.from({ length: 9 }, () =>
         Array(9).fill(undefined)
       );
@@ -33,7 +44,6 @@ export const useSudokuStore = defineStore('sudoku', {
         JSON.parse(JSON.stringify(this.solvedGrid)),
         difficulty
       );
-      this.resetTimer();
     },
     clearCell(row: number, col: number) {
       if (this.grid[row] && typeof this.grid[row][col] !== 'undefined') {
@@ -50,12 +60,6 @@ export const useSudokuStore = defineStore('sudoku', {
         this.grid[row][col] = value;
       }
     },
-    resetGrid() {
-      this.grid = clearCells(
-        JSON.parse(JSON.stringify(this.solvedGrid)),
-        RankEnum.Beginner
-      );
-    },
     clearGrid() {
       this.grid = Array.from({ length: 9 }, () => Array(9).fill(undefined));
     },
@@ -63,22 +67,18 @@ export const useSudokuStore = defineStore('sudoku', {
       return JSON.stringify(this.grid) === JSON.stringify(this.solvedGrid);
     },
     startTimer() {
-      if (this.interval) return;
+      if (this.interval) {
+        return;
+      }
       this.interval = setInterval(() => {
         this.elapsedTime++;
       }, 1000);
     },
     stopTimer() {
       if (this.interval) {
-        this.elapsedTime = 0;
         clearInterval(this.interval);
         this.interval = 0;
       }
-    },
-    resetTimer() {
-      this.stopTimer();
-      this.elapsedTime = 0;
-      this.startTimer();
     },
     setCellError(rowIndex: number, colIndex: number) {
       this.errorCells.add(`${rowIndex}-${colIndex}`);
@@ -86,8 +86,14 @@ export const useSudokuStore = defineStore('sudoku', {
     clearCellError(rowIndex: number, colIndex: number) {
       this.errorCells.delete(`${rowIndex}-${colIndex}`);
     },
-    clearAllError() {
+    clearAllErrorCells() {
       this.errorCells.clear();
+    },
+    clearAllHintCells() {
+      this.hintCells.clear();
+    },
+    addHintCell(rowIndex: number, colIndex: number) {
+      this.hintCells.add(`${rowIndex}-${colIndex}`);
     },
   },
 });

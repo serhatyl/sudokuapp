@@ -1,4 +1,5 @@
 <template>
+  <div><h1>Sudoku</h1></div>
   <div class="grid-row">
     <div>
       Level:
@@ -11,7 +12,9 @@
     <div>Score: {{ score }}</div>
     <div>Time Spent: {{ formattedTime }}</div>
     <div>
-      <button type="button">Hint({{ remainingHint }})</button>
+      <button type="button" @click="getHint()">
+        Hint ({{ remainingHint }}) 💡
+      </button>
     </div>
   </div>
 </template>
@@ -35,18 +38,19 @@ export default defineComponent({
 
       return `${formattedMinutes}:${formattedSeconds}`;
     });
+    const remainingHint = computed(() => sudokuStore.remainingHint);
+    const score = computed(() => sudokuStore.score);
 
-    const { score, remainingHint } = sudokuStore;
-
-    onMounted(() => {
-      sudokuStore.startTimer();
-    });
+    onMounted(() => {});
 
     const onRankChanged = (event: Event) => {
       if (event.target instanceof HTMLSelectElement) {
         sudokuStore.generateSudoku(event.target.value as RankEnum);
-        console.log('sudokuStore.elapsedTime= ', sudokuStore.elapsedTime);
       }
+    };
+
+    const getHint = () => {
+      sudokuStore.getHint();
     };
 
     return {
@@ -56,6 +60,7 @@ export default defineComponent({
       rankEnumValues,
       remainingHint,
       onRankChanged,
+      getHint,
     };
   },
 });

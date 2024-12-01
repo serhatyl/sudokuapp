@@ -11,6 +11,9 @@
           'sudoku-grid__cell--border-right': (colIndex + 1) % 3 === 0,
           'sudoku-grid__cell--border-bottom': (rowIndex + 1) % 3 === 0,
           'sudoku-grid__cell--prefilled': isPrefilled(rowIndex, colIndex),
+          'sudoku-grid__cell--hint': sudokuStore.hintCells.has(
+            `${rowIndex}-${colIndex}`
+          ),
           'sudoku-grid__cell--error': sudokuStore.errorCells.has(
             `${rowIndex}-${colIndex}`
           ),
@@ -20,13 +23,16 @@
       >
         <input
           type="number"
-          v-model="sudokuStore.grid[rowIndex][colIndex]"
+          inputmode="numeric"
           class="sudoku-grid__cell__input"
           min="1"
           max="9"
+          v-model="sudokuStore.grid[rowIndex][colIndex]"
           @input="handleChange(rowIndex, colIndex)"
           @keydown="handleKeyDown($event)"
-          :disabled="isPrefilled(rowIndex, colIndex)"
+          :disabled="
+            isPrefilled(rowIndex, colIndex) || isHintCell(rowIndex, colIndex)
+          "
         />
       </div>
     </div>
@@ -54,18 +60,22 @@ export default defineComponent({
 
     onMounted(() => {
       sudokuStore.generateSudoku(sudokuStore.rank);
+      console.log('solved grid = ', sudokuStore.solvedGrid);
     });
 
     watch(
       () => sudokuStore.grid,
       () => {
         updatePrefilledCells();
-        sudokuStore.clearAllError();
       }
     );
 
     const isPrefilled = (rowIndex: number, colIndex: number): boolean => {
       return sudokuStore.prefilledCells.has(`${rowIndex}-${colIndex}`);
+    };
+
+    const isHintCell = (rowIndex: number, colIndex: number): boolean => {
+      return sudokuStore.hintCells.has(`${rowIndex}-${colIndex}`);
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -105,6 +115,7 @@ export default defineComponent({
       handleChange,
       handleKeyDown,
       isPrefilled,
+      isHintCell,
     };
   },
 });
@@ -147,6 +158,10 @@ export default defineComponent({
 
     &--error {
       background-color: #ff0000;
+    }
+
+    &--hint {
+      background-color: #b8d7f9;
     }
 
     &--border-bottom {

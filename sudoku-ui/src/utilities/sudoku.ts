@@ -1,4 +1,20 @@
 import { RankEnum, SudokuBoard } from '../models';
+import { useSudokuStore } from '../store/sudokuStore';
+
+const TOTAL_HINT_COUNT = 10;
+
+const defaultState = {
+  rank: RankEnum.Beginner,
+  score: 0,
+  remainingHint: 10,
+  elapsedTime: 0,
+  interval: 0,
+  grid: [] as SudokuBoard,
+  solvedGrid: [] as SudokuBoard,
+  errorCells: new Set<string>(),
+  prefilledCells: new Set<string>(),
+  hintCells: new Set<string>(),
+};
 
 const checkNumberIsNotExist = (
   board: SudokuBoard,
@@ -81,7 +97,6 @@ const clearCells = (
     ) + visibleCellsRange[0];
 
   const emptyCellsCount = totalCells - visibleCellsCount;
-  console.log('empty cells count', emptyCellsCount);
   const availableCells: Array<{ row: number; col: number }> = [];
 
   board.forEach((row, rowIndex) => {
@@ -120,4 +135,23 @@ const fillAllCells = (board: SudokuBoard): boolean => {
   });
 };
 
-export { fillAllCells, clearCells };
+const getHint = (solvedGrid: SudokuBoard, grid: SudokuBoard) => {
+  const emptyCells: { rowIndex: number; colIndex: number }[] = [];
+  solvedGrid.forEach((row, rowIndex) => {
+    row.forEach((_, colIndex) => {
+      if (grid[rowIndex][colIndex] === undefined) {
+        emptyCells.push({ rowIndex, colIndex });
+      }
+    });
+  });
+
+  if (emptyCells.length === 0) return;
+  const randomIndex = Math.floor(Math.random() * emptyCells.length);
+  const { rowIndex, colIndex } = emptyCells[randomIndex];
+  grid[rowIndex][colIndex] = solvedGrid[rowIndex][colIndex];
+
+  const sudokuStore = useSudokuStore();
+  sudokuStore.addHintCell(rowIndex, colIndex);
+};
+
+export { fillAllCells, clearCells, getHint, TOTAL_HINT_COUNT, defaultState };
