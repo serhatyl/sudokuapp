@@ -1,5 +1,9 @@
-import { RankEnum, SudokuBoard } from '../models';
-import { useSudokuStore } from '../store/sudokuStore';
+import {
+  LEADERBOARD_LOCAL_STORAGE_KEY,
+  LeaderboardEntry,
+  RankEnum,
+  SudokuBoard,
+} from '../models';
 
 const TOTAL_HINT_COUNT = 10;
 
@@ -145,13 +149,56 @@ const getHint = (solvedGrid: SudokuBoard, grid: SudokuBoard) => {
     });
   });
 
-  if (emptyCells.length === 0) return;
+  if (emptyCells.length === 0)
+    return { rowIndex: undefined, colIndex: undefined };
   const randomIndex = Math.floor(Math.random() * emptyCells.length);
   const { rowIndex, colIndex } = emptyCells[randomIndex];
   grid[rowIndex][colIndex] = solvedGrid[rowIndex][colIndex];
 
-  const sudokuStore = useSudokuStore();
-  sudokuStore.addHintCell(rowIndex, colIndex);
+  return {
+    rowIndex,
+    colIndex,
+  };
 };
 
-export { fillAllCells, clearCells, getHint, TOTAL_HINT_COUNT, defaultState };
+const calculateFinalScore = (
+  elapsedTime: number,
+  score: number
+): Promise<number> => {
+  return new Promise((resolve) => {
+    const scoreFromPartOne = score;
+    const finalScore = scoreFromPartOne + (500 - elapsedTime);
+    resolve(finalScore);
+  });
+};
+
+const saveToLeaderboardLocalStorage = (score: number, name: string) => {
+  const leaderboard: LeaderboardEntry[] = JSON.parse(
+    localStorage.getItem('Leaderboard') || '[]'
+  );
+  leaderboard.push({ score, name });
+  leaderboard.sort(
+    (a: LeaderboardEntry, b: LeaderboardEntry) => b.score - a.score
+  );
+  localStorage.setItem(
+    LEADERBOARD_LOCAL_STORAGE_KEY,
+    JSON.stringify(leaderboard)
+  );
+};
+
+const getLeaderboardFromLocalStorage = (): LeaderboardEntry[] => {
+  return JSON.parse(
+    localStorage.getItem(LEADERBOARD_LOCAL_STORAGE_KEY) || '[]'
+  );
+};
+
+export {
+  fillAllCells,
+  clearCells,
+  getHint,
+  calculateFinalScore,
+  saveToLeaderboardLocalStorage,
+  getLeaderboardFromLocalStorage,
+  TOTAL_HINT_COUNT,
+  defaultState,
+};

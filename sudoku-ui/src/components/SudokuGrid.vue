@@ -38,6 +38,8 @@
     </div>
   </div>
 
+  <button @click="fillGrid()">doldur</button>
+
   <Fireworks
     ref="fw"
     v-if="isSudokuCompleted"
@@ -55,6 +57,11 @@
 import { defineComponent, onMounted, ref, watch } from 'vue';
 import { useSudokuStore } from '../store/sudokuStore';
 import Fireworks from '@fireworks-js/vue';
+import {
+  calculateFinalScore,
+  getLeaderboardFromLocalStorage,
+  saveToLeaderboardLocalStorage,
+} from '../utilities/sudoku.ts';
 
 export default defineComponent({
   components: {
@@ -141,9 +148,24 @@ export default defineComponent({
       }
       isSudokuCompleted.value = sudokuStore.isGridSolved();
       if (isSudokuCompleted.value) {
-        alert('Congratulations!');
-        //TODO save time & score
+        sudokuStore.stopTimer();
+        calculateFinalScore(sudokuStore.elapsedTime, sudokuStore.score).then(
+          (totalScore: number) => {
+            const userName = prompt(
+              `Congratulations! Your score is ${totalScore}... Please enter your name to save your score to the leaderboard:`
+            );
+            if (userName) {
+              saveToLeaderboardLocalStorage(totalScore, userName);
+            }
+            //TODO save time & score to backend
+          }
+        );
       }
+    };
+
+    const fillGrid = () => {
+      sudokuStore.grid = sudokuStore.solvedGrid;
+      sudokuStore.grid[0][0] = undefined;
     };
 
     return {
@@ -153,6 +175,7 @@ export default defineComponent({
       handleKeyDown,
       isPrefilled,
       isHintCell,
+      fillGrid,
     };
   },
 });

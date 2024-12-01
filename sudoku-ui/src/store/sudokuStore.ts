@@ -30,7 +30,10 @@ export const useSudokuStore = defineStore('sudoku', {
         this.score -= penalty;
         this.remainingHint -= 1;
 
-        getHint(this.solvedGrid, this.grid);
+        const { rowIndex, colIndex } = getHint(this.solvedGrid, this.grid);
+        if (rowIndex !== undefined && colIndex !== undefined) {
+          this.addHintCell(rowIndex, colIndex);
+        }
       }
     },
     generateSudoku(difficulty: RankEnum) {
@@ -39,6 +42,7 @@ export const useSudokuStore = defineStore('sudoku', {
         Array(9).fill(undefined)
       );
       fillAllCells(emptyBoard);
+      // NOTE - deep copy
       this.solvedGrid = JSON.parse(JSON.stringify(emptyBoard));
       this.grid = clearCells(
         JSON.parse(JSON.stringify(this.solvedGrid)),
